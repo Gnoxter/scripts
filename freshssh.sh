@@ -1,21 +1,8 @@
 #!/bin/bash
 
-error () {
-  local msg="${1}"
-
-  echo "${msg}"
-  exit 1
-}
-
-
-create_key () {
- 
-  local out_file="${1}/id_rsa" 
-  (umask 077 && ssh-keygen -q -N "" -t rsa -b 4096 -f ${out_file} -C ${2})
-
-  out_file="${1}/id_ed25519"
-  (umask 077 && ssh-keygen -q -N "" -t ed25519  -f ${out_file} -C ${2})
-
+create_keys () {
+  (umask 077 && ssh-keygen -q -N "" -t rsa -b 4096 -f "${1}/id_rsa" -C ${2} \
+  && ssh-keygen -q -N "" -t ed25519  -f "${1}/id_ed25519" -C ${2})
 }
 
 print_keys () {
@@ -41,8 +28,9 @@ confirm () {
 main () {
   local tmp_dir=$(mktemp -d)
 
-  if ! create_key "${tmp_dir}" lain@anon; then
-    error "Unable to create SSH key"
+  if ! create_keys "${tmp_dir}" lain@anon; then
+    echo "Unable to create SSH keys"
+	exit 1
   fi
 
   echo "Session Dir: ${tmp_dir}"
